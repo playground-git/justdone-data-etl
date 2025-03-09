@@ -86,6 +86,7 @@ class ExchangeRatesDataClient(BaseExchangeRateClient):
             logger.error(f"Request failed: {str(e)}")
             raise
 
+    # NOTE: here we override concrete function from base class to avoid making many requests for each specific date in date range
     def get_rates_for_period(
         self,
         start_date: Union[str, date],
