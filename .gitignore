@@ -202,3 +202,5 @@ override.tf.json
 
 # Ignore lock file
 .terraform.lock.hcl
+
+logs/
