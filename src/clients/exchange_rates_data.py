@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 import requests
 
-from .base import BaseExchangeRateClient
+from src.clients.base import BaseExchangeRateClient
 
 logger = logging.getLogger(__name__)
 

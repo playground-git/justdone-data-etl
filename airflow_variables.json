@@ -1,0 +1,9 @@
+{
+  "exchange_rates_api_key": "K8s0JGXyoWTKFIuPQvvRdEsSyzs0tQV8",
+  "base_currency": "USD",
+  "target_currencies": "EUR,UAH",
+  "gcp_project_id": "de-tasks-453115",
+  "gcp_location": "EU",
+  "bq_dataset_id": "exchange_rates",
+  "bq_table_id": "rates"
+}

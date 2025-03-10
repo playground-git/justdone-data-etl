@@ -3,9 +3,8 @@ from datetime import date
 from typing import Optional
 
 from google.cloud import bigquery
-from google.cloud.exceptions import GoogleCloudError
 
-from models.exchange_rate import ExchangeRate
+from src.models.exchange_rate import ExchangeRate
 
 logger = logging.getLogger(__name__)
 
@@ -18,69 +17,21 @@ class BigQueryStorage:
         project_id: str,
         dataset_id: str = "exchange_rates",
         table_id: str = "rates",
+        client: Optional[bigquery.Client] = None,
     ):
         """Initialize BigQuery storage"""
         self.project_id = project_id
         self.dataset_id = dataset_id
         self.table_id = table_id
-        self.client = bigquery.Client(project=project_id)
+
+        # Use provided client or create a new one
+        self.client = (
+            client if client is not None else bigquery.Client(project=project_id)
+        )
 
         self.table_ref = f"{project_id}.{dataset_id}.{table_id}"
 
         logger.info(f"Initialized BigQuery storage with table: {self.table_ref}")
-
-    def create_dataset_if_not_exists(self) -> None:
-        """Create dataset if it doesn't exist"""
-        try:
-            dataset_ref = f"{self.project_id}.{self.dataset_id}"
-            dataset = bigquery.Dataset(dataset_ref)
-            dataset.location = "EU"
-
-            self.client.create_dataset(dataset, exists_ok=True)
-            logger.info(f"Ensure dataset exists: {dataset_ref}")
-
-        except GoogleCloudError as e:
-            logger.error(f"Error creating dataset: {str(e)}")
-            raise
-
-    def create_table_if_not_exists(self) -> None:
-        """Create exchange rates table if it doesn't exist"""
-        try:
-            schema = [
-                bigquery.SchemaField(
-                    "date", "DATE", description="Date of the exchange rate"
-                ),
-                bigquery.SchemaField(
-                    "base_currency", "STRING", description="Base currency code"
-                ),
-                bigquery.SchemaField(
-                    "target_currency", "STRING", description="Target currency code"
-                ),
-                bigquery.SchemaField(
-                    "rate", "FLOAT", description="Exchange rate value"
-                ),
-                bigquery.SchemaField(
-                    "source", "STRING", description="Source of the exchange rate data"
-                ),
-                bigquery.SchemaField(
-                    "created_at",
-                    "TIMESTAMP",
-                    description="When this record was created",
-                ),
-            ]
-
-            table = bigquery.Table(self.table_ref, schema=schema)
-
-            table.time_partitioning = bigquery.TimePartitioning(
-                type_=bigquery.TimePartitioningType.DAY, field="date"
-            )
-
-            self.client.create_table(table, exists_ok=True)
-            logger.info(f"Ensure table exists: {self.table_ref}")
-
-        except GoogleCloudError as e:
-            logger.error(f"Error creating table: {str(e)}")
-            raise
 
     def save_exchange_rates(
         self, rates: list[ExchangeRate], replace_existing: bool = True
